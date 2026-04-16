@@ -23,6 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="readme.md" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
