@@ -5,19 +5,20 @@
     <Description>asterNet library to support net Standard 2.0
 </Description>
     <Copyright></Copyright>
-    <PackageProjectUrl>rebati.net/projects/asternet</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MRebati/AsterNET.NetStandard</RepositoryUrl>
-    <RepositoryType>Open Source</RepositoryType>
+    <PackageProjectUrl>https://github.com/Pazkov/AsterNET.NetStandard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Pazkov/AsterNET.NetStandard</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageTags>asternet, asterisk, asterisk net core, asternet net core, asternet standard, asternet net standard, asterisk net standard</PackageTags>
     <PackageReleaseNotes>AsterNet library to support net Standard 2.0
-- Added more linux support thanks to @johnye2e
-- Added Bridge Destroy Action</PackageReleaseNotes>
+- Added Asterisk 12+ Interface property to AbstractAgentEvent, QueueMemberEvent, AgentsEvent
+- Added InCall property to QueueMemberEvent
+- Added Asterisk 12+ properties to AgentsEvent</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>MRebati</Authors>
+    <Authors>MRebati, Pazkov</Authors>
     <Company>RebatiNet</Company>
-    <Version>2.2.2</Version>
-    <AssemblyVersion>2.2.2.0</AssemblyVersion>
-    <FileVersion>2.2.2.0</FileVersion>
+    <Version>2.3.0</Version>
+    <AssemblyVersion>2.3.0.0</AssemblyVersion>
+    <FileVersion>2.3.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
