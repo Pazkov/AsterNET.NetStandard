@@ -17,6 +17,28 @@ namespace AsterNET.NetStandard.Manager.Event
 		private int status;
 		private bool paused;
 		private string name;
+		private string @interface;
+		private bool incall;
+
+		/// <summary>
+		/// Get/Set the queue member's channel technology or location.<br/>
+		/// Available since Asterisk 12.
+		/// </summary>
+		public string Interface
+		{
+			get { return this.@interface; }
+			set { this.@interface = value; }
+		}
+
+		/// <summary>
+		/// Get/Set if member is in call.<br/>
+		/// Available since Asterisk 13.
+		/// </summary>
+		public bool InCall
+		{
+			get { return this.incall; }
+			set { this.incall = value; }
+		}
 
 		/// <summary>
 		/// Get/Set the name of the queue member.

@@ -16,12 +16,19 @@ namespace AsterNET.NetStandard.Manager.Event
         public string Queue { get; set; }
 
         /// <summary>
-        ///     Get/Set the name of the member's interface.
+        ///     Get/Set the queue member's channel technology or location.<br />
+        ///     Added in Asterisk 12.
+        /// </summary>
+        public string Interface { get; set; }
+
+        /// <summary>
+        ///     Get/Set the name of the member's interface.<br />
+        ///     Removed in Asterisk 12. Use <see cref="Interface"/> instead.
         /// </summary>
         public string Member { get; set; }
 
         /// <summary>
-        ///     Get/Set the name of the member's interface.
+        ///     Get/Set the name of the queue member.
         /// </summary>
         public string MemberName { get; set; }
     }
