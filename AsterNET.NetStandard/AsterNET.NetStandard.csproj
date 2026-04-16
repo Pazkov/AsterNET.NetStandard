@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>asterNet library to support net Standard 2.0
+    <PackageId>Pazkov.AsterNET.NetStandard</PackageId>
+    <Description>AsterNET.NetStandard fork with Asterisk 12+ compatibility fixes
 </Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/Pazkov/AsterNET.NetStandard</PackageProjectUrl>
