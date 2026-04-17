@@ -5,11 +5,6 @@ namespace AsterNET.NetStandard.Manager.Event
 	/// </summary>
 	public class QueueMemberPenaltyEvent : AbstractQueueMemberEvent
 	{
-		/// <summary>
-		/// Get/Set the penalty for the queue location.
-		/// </summary>
-		public new int Penalty { get; set; }
-
         /// <summary>
         /// Creates a new QueueMemberPenaltyEvent
         /// </summary>

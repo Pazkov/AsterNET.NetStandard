@@ -9,12 +9,6 @@ namespace AsterNET.NetStandard.Manager.Event
     /// </summary>
     public class QueueMemberRemovedEvent : AbstractQueueMemberEvent
 	{
-		/// <summary>
-		/// Returns the name of the member's interface.<br/>
-		/// E.g. the channel name or agent group.
-		/// </summary>
-		public new string MemberName { get; set; }
-
         /// <summary>
         /// Creates a new QueueMemberRemovedEvent
         /// </summary>

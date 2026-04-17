@@ -101,6 +101,13 @@ namespace AsterNET.NetStandard.Manager
     public delegate void QueueCallerJoinEventHandler(object sender, Event.QueueCallerJoinEvent e);
     public delegate void QueueCallerLeaveEventHandler(object sender, Event.QueueCallerLeaveEvent e);
     public delegate void QueueMemberPauseEventHandler(object sender, Event.QueueMemberPauseEvent e);
+    public delegate void DTMFBeginEventHandler(object sender, Event.DTMFBeginEvent e);
+    public delegate void DTMFEndEventHandler(object sender, Event.DTMFEndEvent e);
+    public delegate void HangupRequestEventHandler(object sender, Event.HangupRequestEvent e);
+    public delegate void MusicOnHoldEventHandler(object sender, Event.MusicOnHoldEvent e);
+    public delegate void MusicOnHoldStartEventHandler(object sender, Event.MusicOnHoldStartEvent e);
+    public delegate void MusicOnHoldStopEventHandler(object sender, Event.MusicOnHoldStopEvent e);
+    public delegate void QueueSummaryEventHandler(object sender, Event.QueueSummaryEvent e);
 
 
 
@@ -525,6 +532,14 @@ namespace AsterNET.NetStandard.Manager
         /// </summary>
         public event QueueMemberPauseEventHandler QueueMemberPause;
 
+        public event DTMFBeginEventHandler DTMFBegin;
+        public event DTMFEndEventHandler DTMFEnd;
+        public event HangupRequestEventHandler HangupRequest;
+        public event MusicOnHoldEventHandler MusicOnHold;
+        public event MusicOnHoldStartEventHandler MusicOnHoldStart;
+        public event MusicOnHoldStopEventHandler MusicOnHoldStop;
+        public event QueueSummaryEventHandler QueueSummary;
+
         #endregion
 
         #region Constructor - ManagerConnection()
@@ -640,6 +655,14 @@ namespace AsterNET.NetStandard.Manager
             Helper.RegisterEventHandler(registeredEventHandlers, 95, typeof(QueueCallerJoinEvent));
             Helper.RegisterEventHandler(registeredEventHandlers, 96, typeof(QueueCallerLeaveEvent));
             Helper.RegisterEventHandler(registeredEventHandlers, 97, typeof(QueueMemberPauseEvent));
+
+            Helper.RegisterEventHandler(registeredEventHandlers, 100, typeof(DTMFBeginEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 101, typeof(DTMFEndEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 102, typeof(HangupRequestEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 103, typeof(MusicOnHoldEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 104, typeof(MusicOnHoldStartEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 105, typeof(MusicOnHoldStopEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 106, typeof(QueueSummaryEvent));
 
             #endregion
 
@@ -1294,6 +1317,34 @@ namespace AsterNET.NetStandard.Manager
                         {
                             QueueMemberPause(this, (QueueMemberPauseEvent)e);
                         }
+                        break;
+                    case 100:
+                        if (DTMFBegin != null)
+                            DTMFBegin(this, (DTMFBeginEvent)e);
+                        break;
+                    case 101:
+                        if (DTMFEnd != null)
+                            DTMFEnd(this, (DTMFEndEvent)e);
+                        break;
+                    case 102:
+                        if (HangupRequest != null)
+                            HangupRequest(this, (HangupRequestEvent)e);
+                        break;
+                    case 103:
+                        if (MusicOnHold != null)
+                            MusicOnHold(this, (MusicOnHoldEvent)e);
+                        break;
+                    case 104:
+                        if (MusicOnHoldStart != null)
+                            MusicOnHoldStart(this, (MusicOnHoldStartEvent)e);
+                        break;
+                    case 105:
+                        if (MusicOnHoldStop != null)
+                            MusicOnHoldStop(this, (MusicOnHoldStopEvent)e);
+                        break;
+                    case 106:
+                        if (QueueSummary != null)
+                            QueueSummary(this, (QueueSummaryEvent)e);
                         break;
                     default:
                         if (UnhandledEvent != null)
@@ -2136,9 +2187,14 @@ namespace AsterNET.NetStandard.Manager
         private delegate void SendToAsteriskDelegate(string buffer);
         private SendToAsteriskDelegate sa = null;
 
+        private object lockSocketWrite = new object();
+
         private void sendToAsterisk(string buffer)
         {
-            mrSocket.Write(buffer);
+            lock (lockSocketWrite)
+            {
+                mrSocket.Write(buffer);
+            }
         }
 
         #endregion

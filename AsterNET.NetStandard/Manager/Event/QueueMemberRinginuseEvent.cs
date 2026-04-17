@@ -5,13 +5,6 @@ namespace AsterNET.NetStandard.Manager.Event
     /// </summary>
     public class QueueMemberRinginuseEvent : AbstractQueueMemberEvent
     {
-
-        /// <summary>
-        /// Evaluates <see langword="true"/> if Ringinuse,
-        /// <see langword="false"/> if not.<br />
-        /// </summary>
-        public new bool Ringinuse { get; set; }
-
         /// <summary>
         /// Creates a new QueueMemberRinginuseEvent
         /// </summary>

@@ -17,16 +17,6 @@ namespace AsterNET.NetStandard.Manager.Event
         public string Reason { get; set; }
 
         /// <summary>
-        /// <b>Not Available</b>, use <see cref="QueueMemberPauseEvent"/> instead.
-        /// </summary>
-        public new string PausedReason { get; set; }
-
-        /// <summary>
-        /// <b>Not Available</b>, use <see cref="QueueMemberPauseEvent"/> instead.
-        /// </summary>
-        public new bool InCall { get; set; }
-
-        /// <summary>
         /// Creates a new QueueMemberPausedEvent
         /// </summary>
         /// <param name="source">ManagerConnection passed through in the event.</param>
