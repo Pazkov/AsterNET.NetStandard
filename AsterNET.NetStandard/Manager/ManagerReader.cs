@@ -294,11 +294,12 @@ namespace AsterNET.NetStandard.Manager
 						if (processingCommandResult)
 						{
 							string lineLower = line.ToLower(Helper.CultureInfo);
-							if (lineLower == "--end command--")
+							// Asterisk 13+ terminates the command output with an empty line
+							// instead of the legacy "--END COMMAND--" marker.
+							if (lineLower == "--end command--" || lineLower == "")
 							{
 								var commandResponse = new CommandResponse();
 								Helper.SetAttributes(commandResponse, packet);
-								commandList.Add(line);
 								commandResponse.Result = commandList;
 								processingCommandResult = false;
 								packet.Clear();
@@ -310,6 +311,10 @@ namespace AsterNET.NetStandard.Manager
 								|| lineLower.StartsWith("server: ")
 								)
 								Helper.AddKeyValue(packet, line);
+							// Asterisk 13+ prefixes each command output line with "Output: ".
+							// Strip it so callers receive the raw CLI output.
+							else if (lineLower.StartsWith("output: "))
+								commandList.Add(line.Substring(8));
 							else
 								commandList.Add(line);
 							continue;
@@ -329,9 +334,12 @@ namespace AsterNET.NetStandard.Manager
 								mrConnector.DispatchEvent(connectEvent);
 								continue;
 							}
-							if (line.Trim().ToLower(Helper.CultureInfo) == "response: follows")
+							// "Response: Follows" is the legacy (Asterisk <= 12) command reply.
+							// Asterisk 13+ replies with a header ending in "Command output follows".
+							if (line.Trim().ToLower(Helper.CultureInfo) == "response: follows"
+								|| line.Trim().ToLower(Helper.CultureInfo).EndsWith("command output follows"))
 							{
-								// Switch to wait "--END COMMAND--" mode
+								// Switch to wait "--END COMMAND--" / empty-line mode
 								processingCommandResult = true;
 								packet.Clear();
 								commandList.Clear();
