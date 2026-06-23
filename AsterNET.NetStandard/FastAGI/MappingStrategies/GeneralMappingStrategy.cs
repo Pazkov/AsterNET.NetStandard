@@ -23,7 +23,7 @@ namespace AsterNET.NetStandard.FastAGI.MappingStrategies
                 else
                     rtn = (AGIScript)Assembly.GetEntryAssembly().CreateInstance(ClassName);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
