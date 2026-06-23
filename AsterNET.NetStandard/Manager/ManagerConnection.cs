@@ -108,6 +108,13 @@ namespace AsterNET.NetStandard.Manager
     public delegate void MusicOnHoldStartEventHandler(object sender, Event.MusicOnHoldStartEvent e);
     public delegate void MusicOnHoldStopEventHandler(object sender, Event.MusicOnHoldStopEvent e);
     public delegate void QueueSummaryEventHandler(object sender, Event.QueueSummaryEvent e);
+    public delegate void ChallengeSentEventHandler(object sender, Event.ChallengeSentEvent e);
+    public delegate void ChallengeResponseFailedEventHandler(object sender, Event.ChallengeResponseFailedEvent e);
+    public delegate void SuccessfulAuthEventHandler(object sender, Event.SuccessfulAuthEvent e);
+    public delegate void InvalidAccountIDEventHandler(object sender, Event.InvalidAccountIDEvent e);
+    public delegate void DeviceStateChangeEventHandler(object sender, Event.DeviceStateChangeEvent e);
+    public delegate void ConfbridgeMuteEventHandler(object sender, Event.ConfbridgeMuteEvent e);
+    public delegate void ConfbridgeUnmuteEventHandler(object sender, Event.ConfbridgeUnmuteEvent e);
 
 
 
@@ -540,6 +547,41 @@ namespace AsterNET.NetStandard.Manager
         public event MusicOnHoldStopEventHandler MusicOnHoldStop;
         public event QueueSummaryEventHandler QueueSummary;
 
+        /// <summary>
+        /// Raised when an Asterisk service sends an authentication challenge to a request.<br/>
+        /// </summary>
+        public event ChallengeSentEventHandler ChallengeSent;
+
+        /// <summary>
+        /// Raised when a request's attempt to authenticate has been challenged, and the request failed the authentication challenge.<br/>
+        /// </summary>
+        public event ChallengeResponseFailedEventHandler ChallengeResponseFailed;
+
+        /// <summary>
+        /// Raised when a request successfully authenticates with a service.<br/>
+        /// </summary>
+        public event SuccessfulAuthEventHandler SuccessfulAuth;
+
+        /// <summary>
+        /// Raised when a request fails an authentication check due to an invalid account ID.<br/>
+        /// </summary>
+        public event InvalidAccountIDEventHandler InvalidAccountID;
+
+        /// <summary>
+        /// Raised when a device state changes.<br/>
+        /// </summary>
+        public event DeviceStateChangeEventHandler DeviceStateChange;
+
+        /// <summary>
+        /// Raised when a confbridge participant is muted.<br/>
+        /// </summary>
+        public event ConfbridgeMuteEventHandler ConfbridgeMute;
+
+        /// <summary>
+        /// Raised when a confbridge participant is unmuted.<br/>
+        /// </summary>
+        public event ConfbridgeUnmuteEventHandler ConfbridgeUnmute;
+
         #endregion
 
         #region Constructor - ManagerConnection()
@@ -663,6 +705,13 @@ namespace AsterNET.NetStandard.Manager
             Helper.RegisterEventHandler(registeredEventHandlers, 104, typeof(MusicOnHoldStartEvent));
             Helper.RegisterEventHandler(registeredEventHandlers, 105, typeof(MusicOnHoldStopEvent));
             Helper.RegisterEventHandler(registeredEventHandlers, 106, typeof(QueueSummaryEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 107, typeof(ChallengeSentEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 108, typeof(ChallengeResponseFailedEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 109, typeof(SuccessfulAuthEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 110, typeof(InvalidAccountIDEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 111, typeof(DeviceStateChangeEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 112, typeof(ConfbridgeMuteEvent));
+            Helper.RegisterEventHandler(registeredEventHandlers, 113, typeof(ConfbridgeUnmuteEvent));
 
             #endregion
 
@@ -1346,6 +1395,34 @@ namespace AsterNET.NetStandard.Manager
                         if (QueueSummary != null)
                             QueueSummary(this, (QueueSummaryEvent)e);
                         break;
+                    case 107:
+                        if (ChallengeSent != null)
+                            ChallengeSent(this, (ChallengeSentEvent)e);
+                        break;
+                    case 108:
+                        if (ChallengeResponseFailed != null)
+                            ChallengeResponseFailed(this, (ChallengeResponseFailedEvent)e);
+                        break;
+                    case 109:
+                        if (SuccessfulAuth != null)
+                            SuccessfulAuth(this, (SuccessfulAuthEvent)e);
+                        break;
+                    case 110:
+                        if (InvalidAccountID != null)
+                            InvalidAccountID(this, (InvalidAccountIDEvent)e);
+                        break;
+                    case 111:
+                        if (DeviceStateChange != null)
+                            DeviceStateChange(this, (DeviceStateChangeEvent)e);
+                        break;
+                    case 112:
+                        if (ConfbridgeMute != null)
+                            ConfbridgeMute(this, (ConfbridgeMuteEvent)e);
+                        break;
+                    case 113:
+                        if (ConfbridgeUnmute != null)
+                            ConfbridgeUnmute(this, (ConfbridgeUnmuteEvent)e);
+                        break;
                     default:
                         if (UnhandledEvent != null)
                             UnhandledEvent(this, e);
@@ -2023,6 +2100,55 @@ namespace AsterNET.NetStandard.Manager
 
             if (result)
                 return handler.Response;
+            throw new TimeoutException("Timeout waiting for response to " + action.Action);
+        }
+        #endregion
+
+        #region SendActionAsync(action)
+        /// <summary>
+        /// Send Action asynchronously with default timeout.
+        /// </summary>
+        /// <param name="action">action to send</param>
+        /// <returns>a task that completes with the response received from Asterisk</returns>
+        public Task<Response.ManagerResponse> SendActionAsync(ManagerAction action)
+        {
+            return SendActionAsync(action, defaultResponseTimeout);
+        }
+        #endregion
+
+        #region SendActionAsync(action, timeout)
+        /// <summary>
+        /// Send action asynchronously with timeout (milliseconds).
+        /// </summary>
+        /// <param name="action">action to send</param>
+        /// <param name="timeOut">timeout in milliseconds</param>
+        /// <returns>a task that completes with the response received from Asterisk</returns>
+        public async Task<Response.ManagerResponse> SendActionAsync(ManagerAction action, int timeOut)
+        {
+            if (action == null)
+                throw new ArgumentException("Unable to send action: action is null.");
+
+            if (mrSocket == null)
+                throw new SystemException("Unable to send " + action.Action + " action: not connected.");
+
+            var tcs = new TaskCompletionSource<Response.ManagerResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handler = new TaskResponseHandler(action, tcs);
+
+            SendAction(action, handler);
+
+            if (timeOut <= 0)
+            {
+                var response = await tcs.Task.ConfigureAwait(false);
+                RemoveResponseHandler(handler);
+                return response;
+            }
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeOut)).ConfigureAwait(false);
+            RemoveResponseHandler(handler);
+
+            if (completed == tcs.Task)
+                return tcs.Task.Result;
+
             throw new TimeoutException("Timeout waiting for response to " + action.Action);
         }
         #endregion

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using AsterNET.NetStandard.IO;
 using AsterNET.NetStandard.Manager.Action;
@@ -26,7 +27,7 @@ namespace AsterNET.NetStandard.Manager
 		private bool is_logoff;
 		private bool disconnect;
 		private byte[] lineBytes;
-		private string lineBuffer;
+		private readonly StringBuilder lineBuffer = new StringBuilder();
 		private readonly Queue<string> lineQueue;
 		private ResponseHandler pingHandler;
 		private bool processingCommandResult;
@@ -128,19 +129,23 @@ namespace AsterNET.NetStandard.Manager
 					return;
 				}
 				string line = mrSocket.Encoding.GetString(mrReader.lineBytes, 0, count);
-				mrReader.lineBuffer += line;
-				int idx;
+				mrReader.lineBuffer.Append(line);
 				// \n - because not all dev in Digium use \r\n
 				// .Trim() kill \r
 				lock (((ICollection) lineQueue).SyncRoot)
-					while (!string.IsNullOrEmpty(mrReader.lineBuffer) && (idx = mrReader.lineBuffer.IndexOf('\n')) >= 0)
+				{
+					int start = 0;
+					int idx;
+					while (start < mrReader.lineBuffer.Length && (idx = IndexOf(mrReader.lineBuffer, '\n', start)) >= 0)
 					{
-						line = idx > 0 ? mrReader.lineBuffer.Substring(0, idx).Trim() : string.Empty;
-						mrReader.lineBuffer = (idx + 1 < mrReader.lineBuffer.Length
-							? mrReader.lineBuffer.Substring(idx + 1)
-							: string.Empty);
+						int lineLength = idx - start;
+						line = lineLength > 0 ? mrReader.lineBuffer.ToString(start, lineLength).Trim() : string.Empty;
+						start = idx + 1;
 						lineQueue.Enqueue(line);
 					}
+					if (start > 0)
+						mrReader.lineBuffer.Remove(0, start);
+				}
 				// Give a next portion !!!
 				nstream.BeginRead(mrReader.lineBytes, 0, mrReader.lineBytes.Length, mrReaderCallbback, mrReader);
 			}
@@ -162,6 +167,22 @@ namespace AsterNET.NetStandard.Manager
 
 		#endregion
 
+		#region IndexOf(builder, value, startIndex)
+
+		/// <summary>
+		///     Returns the index of the first occurrence of <paramref name="value" /> in the
+		///     <paramref name="builder" /> at or after <paramref name="startIndex" />, or -1 if not found.
+		/// </summary>
+		private static int IndexOf(StringBuilder builder, char value, int startIndex)
+		{
+			for (int i = startIndex; i < builder.Length; i++)
+				if (builder[i] == value)
+					return i;
+			return -1;
+		}
+
+		#endregion
+
 		#region Reinitialize 
 
 		internal void Reinitialize()
@@ -171,7 +192,7 @@ namespace AsterNET.NetStandard.Manager
 			lineQueue.Clear();
 			packet.Clear();
 			commandList.Clear();
-			lineBuffer = string.Empty;
+			lineBuffer.Clear();
 			lineBytes = new byte[mrSocket.TcpClient.ReceiveBufferSize];
 			lastPacketTime = DateTime.Now;
 			wait4identiier = true;
